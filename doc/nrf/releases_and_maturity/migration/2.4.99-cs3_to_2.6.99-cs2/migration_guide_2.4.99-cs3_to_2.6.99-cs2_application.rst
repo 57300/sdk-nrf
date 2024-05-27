@@ -44,9 +44,6 @@ Lifecycle State changes
   Also, it is no longer possible to perform an unauthenticated backward LCS transitions.
   This means that once set to ``RoT``, it is no longer possible to revert to LCS state ``EMPTY``.
 
-..
-   ### Add DTS changes ###
-
 .. note::
    Not all the features supported in |NCS| v2.4.99-cs3 have been ported to v2.6.99-cs2 (for example, the nRF54H20 support for the nRF Desktop and nRF Machine Learning applications).
    Additional features will be provided in future releases.
@@ -75,6 +72,293 @@ General
      * PPR core: ``nrf54h20dk_nrf54h20_cpuppr`` (Previously ``nrf54h20pdk_nrf54h20_cpuppr@soc1``)
 
      The previously used SOC1-based board files have been removed.
+
+Devicetree
+----------
+
+  * Many devicetree nodes have been re-labeled for the sake of consistency.
+    Some nodes have changed more substantially than others, as explained in later parts of this section.
+    The table below lists all node labels which are no longer used, but which translate to equivalent or functionally similar nodes in the revised nRF54H20 DTS files.
+    All of the old names must be updated in application overlays and/or custom board DTS.
+
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | Old label(s)                   | New label(s)                   | Notes                                                                       |
+    +================================+================================+=============================================================================+
+    | ``bellboard_cpuapp``           | ``cpuapp_bellboard``           |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``bellboard_cpurad``           | ``cpurad_bellboard``           |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``bellboard_cpusec``           | ``cpusec_bellboard``           |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``clic_cpuppr``                | ``cpuppr_clic``                |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``cpuapp_ram0x_ns``            | ``cpuapp_cpurad_ram0x_region`` | Multiple labels had been used.                                              |
+    +--------------------------------+                                |                                                                             |
+    | ``cpurad_ram0x_ns``            |                                |                                                                             |
+    +--------------------------------+                                |                                                                             |
+    | ``ipc_shm_area_cpuapp_cpurad`` |                                |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``cpuapp_ram0x_s``             | ``cpuapp_ram0x_region``        |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``cpuapp_sram0x``              | ``cpuapp_data``                |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``cpuppr``                     | ``cpuppr_vpr``                 |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``cpuppr_sram``                | ``cpuppr_code_data``           |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``cpurad_ram0x_s``             | ``cpurad_ram0x_region``        |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ieee802154``                 | ``cpurad_ieee802154``          |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_cpuapp``                 | ``cpuapp_cpurad_ipc``          | Specific to Radiocore.                                                      |
+    +--------------------------------+                                +-----------------------------------------------------------------------------+
+    | ``ipc_cpurad``                 |                                | Specific to Application.                                                    |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpuapp_cpuppr``      | ``cpuapp_cpuppr_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpuapp_cpurad``      | ``cpuapp_cpurad_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpuapp_cpusec``      | ``cpuapp_cpusec_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpuapp_cpusys``      | ``cpuapp_cpusys_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpuppr_cpuapp``      | ``cpuppr_cpuapp_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpurad_cpuapp``      | ``cpurad_cpuapp_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpurad_cpusec``      | ``cpurad_cpusec_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpurad_cpusys``      | ``cpurad_cpusys_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpusec_cpuapp``      | ``cpusec_cpuapp_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpusec_cpurad``      | ``cpusec_cpurad_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpusys_cpuapp``      | ``cpusys_cpuapp_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_shm_cpusys_cpurad``      | ``cpusys_cpurad_ipc_shm``      |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ipc_to_cpusec``              | ``cpusec_cpuapp_ipc``          | Specific to Application.                                                    |
+    |                                +--------------------------------+-----------------------------------------------------------------------------+
+    |                                | ``cpusec_cpurad_ipc``          | Specific to Radiocore.                                                      |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``mram0``                      | ``cpuapp_rx_partitions``       | Specific to Application.                                                    |
+    |                                +--------------------------------+-----------------------------------------------------------------------------+
+    |                                | ``cpurad_rx_partitions``       | Specific to Radiocore.                                                      |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``mram1``                      | ``cpuapp_rw_partitions``       | Specific to Application.                                                    |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``mram10``                     | ``mram1x``                     | Covers both MRAM10 and MRAM11 as one contiguous area.                       |
+    +--------------------------------+                                |                                                                             |
+    | ``mram11``                     |                                |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``mram10_nvr``                 | ``cpuapp_uicr``                | Used to have multiple ``reg`` values.                                       |
+    |                                +--------------------------------+                                                                             |
+    |                                | ``cpurad_uicr``                |                                                                             |
+    |                                +--------------------------------+                                                                             |
+    |                                | ``ficr``                       |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ram20_shared_region``        | ``shared_ram20_region``        |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ram3x_cpuapp``               | ``cpuapp_dma_region``          |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ram3x_cpurad``               | ``cpurad_dma_region``          | Linker section is also renamed from ``DMA_RAM3x_NET`` to ``DMA_RAM3x_RAD``. |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``ram3x_dma_region``           | ``shared_ram3x_region``        |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``rng``                        | ``prng``                       |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``slot0_partition``            | ``cpuapp_slot0_partition``     | Specific to Application.                                                    |
+    |                                +--------------------------------+-----------------------------------------------------------------------------+
+    |                                | ``cpurad_slot0_partition``     | Specific to Radiocore.                                                      |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``sram0``                      | ``cpuapp_ram0``                | Specific to Application.                                                    |
+    |                                +--------------------------------+-----------------------------------------------------------------------------+
+    |                                | ``cpurad_ram0``                | Specific to Radiocore.                                                      |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``vevif_cpuppr``               | ``cpuppr_vevif``               |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+
+  * In the board DTS for nRF54H20 DK, only the following peripherals are enabled:
+
+    +------------+--------------------------------------------------------------------------------------------------------------------+
+    | Target     | Labels                                                                                                             |
+    +============+====================================================================================================================+
+    | ``cpuapp`` | ``grtc``, ``uart136``, ``cpuapp_bellboard``, ``cpurad_bellboard``, ``gpio0``, ``gpio9``, ``gpiote130``, ``pwm130`` |
+    +------------+--------------------------------------------------------------------------------------------------------------------+
+    | ``cpurad`` | ``grtc``, ``uart135``, ``cpuapp_bellboard``, ``cpurad_bellboard``, ``dppic130``\*, ``dppic132``\*, ``ipct130``\*   |
+    +------------+--------------------------------------------------------------------------------------------------------------------+
+    | ``cpuppr`` | ``grtc``, ``uart135``                                                                                              |
+    +------------+--------------------------------------------------------------------------------------------------------------------+
+
+    \* peripheral is enabled at SoC level in :file:`ncs/zephyr/dts/arm/nordic/nrf54h20_cpurad.dtsi`
+
+    * Some peripherals are no longer enabled by default.
+      This means that custom boards and applications, which relied on certain peripherals being implicitly enabled, must now explicitly set ``status = "okay"`` on the respective nodes in the board DTS or overlay files.
+      In the SoC DTS for nRF54H20, all peripherals are disabled, except where noted above.
+
+    * UART output is now enabled by default for all cores.
+      However, when using a custom board, the default baud rate (``current-speed`` property) should be set in the board DTS, as it is no longer set in the SoC DTS.
+
+  * Memory map:
+
+    * Each memory region must now set ``status = "okay"`` in order to be included for UICR generation.
+    * For the nRF54H20 DK, the default memory regions are defined in :file:`ncs/zephyr/boards/arm/nrf54h20dk_nrf54h20/nrf54h20dk_nrf54h20-memory_map.dtsi`.
+      All of them have ``status = "disabled"`` initially, which allows them to be specified in a common location.
+      Some of them are only enabled for particular cores or relevant samples.
+
+    * Example of migrating an SRAM region definition:
+
+      * Before v2.6.99-cs2:
+
+        .. code-block:: devicetree
+
+           / {
+              soc {
+                 ram0x: memory@2f000000 {
+                    reg = <0x2f000000 DT_SIZE_K(768)>;
+                    ranges = <0 0x2f000000 0xc0000>;
+                    ...
+
+                    cpuapp_ram0x_s: memory@10000 {
+                       compatible = "nordic,allocatable-ram";
+                       reg = <0x10000 DT_SIZE_K(260)>;
+                       perm-read;
+                       perm-write;
+                       perm-secure;
+                       #address-cells = <1>;
+                       #size-cells = <1>;
+                       ranges = <0x0 0x10000 0x41000>;
+
+                       ipc_shm_area_cpusec_cpuapp: memory@0 {
+                          reg = <0x0 DT_SIZE_K(4)>;
+                          #address-cells = <1>;
+                          #size-cells = <1>;
+                          ranges = <0x0 0x0 DT_SIZE_K(4)>;
+
+                          ipc_shm_cpusec_cpuapp: memory@0 {
+                             reg = <0x0 DT_SIZE_K(2)>;
+                          };
+
+                          ipc_shm_cpuapp_cpusec: memory@800 {
+                             reg = <0x800 DT_SIZE_K(2)>;
+                          };
+                       };
+                    };
+                 };
+              };
+           };
+
+      * After v2.6.99-cs2:
+
+        .. code-block:: devicetree
+
+           / {
+              reserved-memory {
+                 cpuapp_ram0x_region: memory@2f010000 {
+                    compatible = "nordic,owned-memory";
+                    reg = <0x2f010000 DT_SIZE_K(260)>;
+                    perm-read;
+                    perm-write;
+                    perm-secure;
+                    #address-cells = <1>;
+                    #size-cells = <1>;
+                    ranges = <0x0 0x2f010000 0x41000>;
+
+                    cpusec_cpuapp_ipc_shm: memory@0 {
+                       reg = <0x0 DT_SIZE_K(2)>;
+                    };
+
+                    cpuapp_cpusec_ipc_shm: memory@800 {
+                       reg = <0x800 DT_SIZE_K(2)>;
+                    };
+                 };
+              };
+           };
+
+        (...)
+
+    * Example of migrating an MRAM partition definition:
+
+      * Before v2.6.99-cs2:
+
+        (...)
+
+      * After v2.6.99-cs2:
+
+        (...)
+
+  * IPC configuration:
+
+    * (...)
+
+    * Configuring a bellboard instance with multiple IRQ lines previously required multiple DT nodes with ``compatible = "nordic,mbox-nrf-ids"``.
+      Now, this compatible has been removed, and IRQ information can be attached to the actual bellboard node.
+
+      * Before v2.6.99-cs2:
+
+        .. code-block:: devicetree
+
+           &global_peripherals {
+              mbox_local_0: mbox0@9a000 {
+                 compatible = "nordic,mbox-nrf-ids";
+                 reg = <0x9a000 0x1000>;
+                 interrupts = <96 NRF_DEFAULT_IRQ_PRIORITY>;
+                 instance = <0>;
+                 #mbox-cells = <1>;
+              };
+
+              mbox_local_1: mbox1@9a000 {
+                 compatible = "nordic,mbox-nrf-ids";
+                 reg = <0x9a000 0x1000>;
+                 interrupts = <97 NRF_DEFAULT_IRQ_PRIORITY>;
+                 instance = <1>;
+                 #mbox-cells = <1>;
+              };
+           };
+
+      * After v2.6.99-cs2:
+
+        .. code-block:: devicetree
+
+           &cpuapp_bellboard {
+              interrupts = <96 NRF_DEFAULT_IRQ_PRIORITY>, <97 NRF_DEFAULT_IRQ_PRIORITY>;
+              interrupt-names = "irq0", "irq1";
+              nordic,interrupt-mapping = <0x0000000f 0>, /* irq0 (#96) handles channels 0-3 */
+                                         <0x000000f0 1>; /* irq1 (#97) handles channels 4-7 */
+           };
+
+  * VPR co-processors:
+
+    * Two properties of ``nordic,nrf-vpr-coprocessor`` nodes have been renamed:
+
+      * ``loader-img-src`` is changed to ``source-memory``.
+      * ``loader-img-dst`` is changed to ``execution-memory``.
+        It is now also permitted to be smaller than ``source-memory`` (if set), not just equal in size.
+
+    * To map a peripheral IRQ to a VPR from the core that owns it (...)
+
+      * Before v2.6.99-cs2:
+
+        .. code-block:: devicetree
+
+           &spi130 {
+              status = "reserved";
+              global-irqs = <421 421 13>;
+           };
+
+      * After v2.6.99-cs2:
+
+        .. code-block:: devicetree
+
+           &spi130 {
+              status = "reserved";
+              interrupt-parent = <&cpuppr_clic>;
+           };
+
+  * Buttons on a custom board may need to include the new ``zephyr,code`` property.
+    The nRF54H20 DK uses the values ``INPUT_KEY_0`` through ``INPUT_KEY_3``.
+    See :file:`ncs/zephyr/include/zephyr/dt-bindings/input/input-event-codes.h` for all supported values.
 
 Security
 ========
