@@ -76,10 +76,12 @@ General
 Devicetree
 ----------
 
+.. toggle::
+
   * Many devicetree nodes have been re-labeled for the sake of consistency.
     Some nodes have changed more substantially than others, as explained in later parts of this section.
-    The table below lists all node labels which are no longer used, but which translate to equivalent or functionally similar nodes in the revised nRF54H20 DTS files.
-    All of the old names must be updated in application overlays and/or custom board DTS.
+    The table below lists node labels which are no longer used, but which translate to equivalent or functionally similar nodes in the revised nRF54H20 DTS files.
+    All of the old names must be updated in DTS files (overlays and/or custom boards) and application code.
 
     +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
     | Old label(s)                   | New label(s)                   | Notes                                                                       |
@@ -178,18 +180,47 @@ Devicetree
     +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
     | ``vevif_cpuppr``               | ``cpuppr_vevif``               |                                                                             |
     +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+    | ``vevif_cpusys``               | ``cpusys_vevif``               |                                                                             |
+    +--------------------------------+--------------------------------+-----------------------------------------------------------------------------+
+
+  * All ``/chosen`` properties specific to nRF54H20 have been removed.
+    In case some of these are used in your application code, some suitable replacements are noted in the table below.
+
+    +-----------------------------+------------------------------------------------------+
+    | Removed choice              | Notes                                                |
+    +=============================+======================================================+
+    | ``nordic,bellboard-cpuapp`` | Use node label ``cpuapp_bellboard``.                 |
+    +-----------------------------+------------------------------------------------------+
+    | ``nordic,bellboard-cpurad`` | Use node label ``cpurad_bellboard``.                 |
+    +-----------------------------+------------------------------------------------------+
+    | ``nordic,bellboard-cpusec`` | Use node label ``cpusec_bellboard``.                 |
+    +-----------------------------+------------------------------------------------------+
+    | ``nordic,tdd-etr-buffer``   | To be replaced in a later version of NCS.            |
+    +-----------------------------+------------------------------------------------------+
+    | ``nrf,hsfll``               | Use node label ``cpuapp_hsfll`` or ``cpurad_hsfll``. |
+    +-----------------------------+------------------------------------------------------+
+    | ``nrf,resetinfo``           | Use alias ``resetinfo``.                             |
+    +-----------------------------+------------------------------------------------------+
+    | ``nrf,tz-secure-image``     | Use chosen ``zephyr,code-partition``.                |
+    +-----------------------------+                                                      |
+    | ``nrf,tz-non-secure-image`` |                                                      |
+    +-----------------------------+------------------------------------------------------+
+    | ``nrf,uicr``                | Use node label ``cpuapp_uicr`` or ``cpurad_uicr``.   |
+    +-----------------------------+------------------------------------------------------+
+    | ``nrf,uicr-ext``            | Use property ``ptr-ext-uicr`` of UICR node.          |
+    +-----------------------------+------------------------------------------------------+
 
   * In the board DTS for nRF54H20 DK, only the following peripherals are enabled:
 
-    +------------+--------------------------------------------------------------------------------------------------------------------+
-    | Target     | Labels                                                                                                             |
-    +============+====================================================================================================================+
-    | ``cpuapp`` | ``grtc``, ``uart136``, ``cpuapp_bellboard``, ``cpurad_bellboard``, ``gpio0``, ``gpio9``, ``gpiote130``, ``pwm130`` |
-    +------------+--------------------------------------------------------------------------------------------------------------------+
-    | ``cpurad`` | ``grtc``, ``uart135``, ``cpuapp_bellboard``, ``cpurad_bellboard``, ``dppic130``\*, ``dppic132``\*, ``ipct130``\*   |
-    +------------+--------------------------------------------------------------------------------------------------------------------+
-    | ``cpuppr`` | ``grtc``, ``uart135``                                                                                              |
-    +------------+--------------------------------------------------------------------------------------------------------------------+
+    +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | Target     | Labels                                                                                                                                                                            |
+    +============+===================================================================================================================================================================================+
+    | ``cpuapp`` | ``grtc``, ``uart136``, ``cpuapp_bellboard``, ``cpurad_bellboard``, ``cpusys_vevif``, ``can120``, ``exmif``, ``gpio0``, ``gpio6``, ``gpio9``, ``gpiote130``, ``pwm130``, ``usbhs`` |
+    +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | ``cpurad`` | ``grtc``, ``uart135``, ``cpuapp_bellboard``, ``cpurad_bellboard``, ``cpusys_vevif``, ``dppic130``\*, ``dppic132``\*, ``ipct130``\*                                                |
+    +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | ``cpuppr`` | ``grtc``, ``uart135``                                                                                                                                                             |
+    +------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
     \* peripheral is enabled at SoC level in :file:`ncs/zephyr/dts/arm/nordic/nrf54h20_cpurad.dtsi`
 
@@ -203,13 +234,13 @@ Devicetree
   * Memory map:
 
     * Each memory region must now set ``status = "okay"`` in order to be included for UICR generation.
-    * For the nRF54H20 DK, the default memory regions are defined in :file:`ncs/zephyr/boards/arm/nrf54h20dk_nrf54h20/nrf54h20dk_nrf54h20-memory_map.dtsi`.
+    * For the nRF54H20 DK, the default memory regions are defined in :file:`ncs/zephyr/boards/nordic/nrf54h20dk/nrf54h20dk_nrf54h20-memory_map.dtsi`.
       All of them have ``status = "disabled"`` initially, which allows them to be specified in a common location.
       Some of them are only enabled for particular cores or relevant samples.
 
-    * Example of migrating an SRAM region definition:
+    * Migrating SRAM region definitions:
 
-      * Before v2.6.99-cs2:
+      * Example before:
 
         .. code-block:: devicetree
 
@@ -249,7 +280,7 @@ Devicetree
               };
            };
 
-      * After v2.6.99-cs2:
+      * Example after:
 
         .. code-block:: devicetree
 
@@ -276,26 +307,142 @@ Devicetree
               };
            };
 
-        (...)
+        The ``nordic,allocatable-ram`` binding has been removed and is replaced here with ``nordic,owned-memory``, which supports the same ownership/permission properties.
+        For more information, see :file:`ncs/zephyr/dts/bindings/reserved-memory/nordic,owned-memory.yaml`.
 
-    * Example of migrating an MRAM partition definition:
+        Like before, these SRAM regions can be defined anywhere in the DTS, but it is recommended to place them under the ``/reserved-memory`` node.
+        The global RAM nodes for ``ram0x`` etc. no longer exist, so the regions should use absolute addresses.
 
-      * Before v2.6.99-cs2:
+    * Migrating MRAM partition definitions:
 
-        (...)
+      * Example before:
 
-      * After v2.6.99-cs2:
+        .. code-block:: devicetree
 
-        (...)
+           &mram_controller {
+              mram0: mram@e0a6000 {
+                 compatible = "nordic,allocatable-mram", "soc-nv-flash";
+                 reg = <0xe0a6000 DT_SIZE_K(360)>;
+                 erase-block-size = <4096>;
+                 write-block-size = <1>;
+                 perm-read;
+                 perm-execute;
+                 perm-secure;
+
+                 partitions {
+                    compatible = "fixed-partitions";
+                    #address-cells = <1>;
+                    #size-cells = <1>;
+
+                    slot0_partition: partition@a6000 {
+                       reg = <0xa6000 DT_SIZE_K(296)>;
+                    };
+
+                    ppr_code_partition: partition@f0000 {
+                       reg = <0xf0000 DT_SIZE_K(64)>;
+                    };
+                 };
+              };
+
+              mram1: mram@e100000 {
+                 compatible = "nordic,allocatable-mram", "soc-nv-flash";
+                 reg = <0xe100000 DT_SIZE_K(916)>;
+                 erase-block-size = <4096>;
+                 write-block-size = <1>;
+                 perm-read;
+                 perm-write;
+
+                 partitions {
+                    compatible = "fixed-partitions";
+                    #address-cells = <1>;
+                    #size-cells = <1>;
+
+                    dfu_partition: partition@100000 {
+                       reg = < 0x100000 DT_SIZE_K(892) >;
+                    };
+
+                    storage_partition: partition@1df000 {
+                       reg = < 0x1df000 DT_SIZE_K(24) >;
+                    };
+                 };
+              };
+           };
+
+      * Example after:
+
+        .. code-block:: devicetree
+
+           &mram1x {
+              cpuapp_rx_partitions: cpuapp-rx-partitions {
+                 compatible = "nordic,owned-partitions", "fixed-partitions";
+                 perm-read;
+                 perm-execute;
+                 perm-secure;
+                 #address-cells = <1>;
+                 #size-cells = <1>;
+
+                 cpuapp_slot0_partition: partition@a6000 {
+                    reg = <0xa6000 DT_SIZE_K(296)>;
+                 };
+
+                 cpuppr_code_partition: partition@f0000 {
+                    reg = <0xf0000 DT_SIZE_K(64)>;
+                 };
+              };
+
+              cpuapp_rw_partitions: cpuapp-rw-partitions {
+                 compatible = "nordic,owned-partitions", "fixed-partitions";
+                 perm-read;
+                 perm-write;
+                 perm-secure;
+                 #address-cells = <1>;
+                 #size-cells = <1>;
+
+                 dfu_partition: partition@100000 {
+                    reg = < 0x100000 DT_SIZE_K(892) >;
+                 };
+
+                 storage_partition: partition@1df000 {
+                    reg = < 0x1df000 DT_SIZE_K(24) >;
+                 };
+              };
+           };
+
+        All MRAM partitions must now be organized under the ``mram1x`` node, which spans both MRAM10 and MRAM11.
+        The ``mram_controller`` node has been removed.
+
+        The ``nordic,allocatable-mram`` binding has been removed and is replaced here with ``nordic,owned-partitions``, which no longer derives from ``soc-nv-flash``.
+        For more information, see :file:`ncs/zephyr/dts/bindings/mtd/nordic,owned-partitions.yaml`.
+
+        Without the old ``mram`` nodes in between, all partition offsets are now correctly expressed as relative to ``mram1x``.
+        The only limitation is that it is no longer possible to assign a different ``erase-block-size`` per MRAM region.
 
   * IPC configuration:
 
-    * (...)
+    * For the nRF54H20 DK, the default IPC nodes are defined in :file:`ncs/zephyr/boards/nordic/nrf54h20dk/nrf54h20dk_nrf54h20-ipc_conf.dtsi`.
+      There is exactly one node for each relevant pair of processors, such as ``cpuapp_cpurad_ipc``.
+      Each node also sets the channel numbers for both directions of communication.
 
-    * Configuring a bellboard instance with multiple IRQ lines previously required multiple DT nodes with ``compatible = "nordic,mbox-nrf-ids"``.
+    * Local bellboards require additional configuration to receive events from remote cores.
+      Example configuration for Application core:
+
+      .. code-block:: devicetree
+
+         &cpuapp_bellboard {
+            interrupts = <96 NRF_DEFAULT_IRQ_PRIORITY>;
+            interrupt-names = "irq0";
+            /* irq0: 0: cpuapp-cpusec, 6: cpuapp-cpusys, 13: cpuapp-cpuppr, 18: cpuapp-cpurad */
+            nordic,interrupt-mapping = <0x00042041 0>;
+         };
+
+      The ``nordic,interrupt-mapping`` property must be kept in sync with the other IPC nodes in DTS, which contain ``mboxes`` specifiers.
+      Here, the property consists of a channel bitmask for interrupt index 0, where for every specifier of the form ``<&cpuapp_bellboard N>``, the Nth bit is set.
+      For more information, see :file:`ncs/zephyr/dts/bindings/mbox/nordic,nrf-bellboard-local.yaml`.
+
+    * Configuring a bellboard instance with multiple IRQ lines previously required multiple nodes with ``compatible = "nordic,mbox-nrf-ids"``.
       Now, this compatible has been removed, and IRQ information can be attached to the actual bellboard node.
 
-      * Before v2.6.99-cs2:
+      * Example before:
 
         .. code-block:: devicetree
 
@@ -317,7 +464,7 @@ Devicetree
               };
            };
 
-      * After v2.6.99-cs2:
+      * Example after:
 
         .. code-block:: devicetree
 
@@ -330,15 +477,16 @@ Devicetree
 
   * VPR co-processors:
 
-    * Two properties of ``nordic,nrf-vpr-coprocessor`` nodes have been renamed:
+    * Two properties of ``nordic,nrf-vpr-coprocessor`` nodes have been updated:
 
-      * ``loader-img-src`` is changed to ``source-memory``.
-      * ``loader-img-dst`` is changed to ``execution-memory``.
-        It is now also permitted to be smaller than ``source-memory`` (if set), not just equal in size.
+      * ``loader-img-src`` is renamed to ``source-memory``.
+      * ``loader-img-dst`` is renamed to ``execution-memory``.
+        The size of this region can be less than or equal to that of ``source-memory`` (if set).
 
-    * To map a peripheral IRQ to a VPR from the core that owns it (...)
+    * Mapping global peripheral interrupts to a VPR can now be described using standard devicetree properties.
+      The custom ``global-irqs`` property has been removed.
 
-      * Before v2.6.99-cs2:
+      * Example before:
 
         .. code-block:: devicetree
 
@@ -347,7 +495,7 @@ Devicetree
               global-irqs = <421 421 13>;
            };
 
-      * After v2.6.99-cs2:
+      * Example after:
 
         .. code-block:: devicetree
 
@@ -355,6 +503,8 @@ Devicetree
               status = "reserved";
               interrupt-parent = <&cpuppr_clic>;
            };
+
+        This can be placed in Application core's DTS, in order to map the SPI130 IRQ from Application to PPR.
 
   * Buttons on a custom board may need to include the new ``zephyr,code`` property.
     The nRF54H20 DK uses the values ``INPUT_KEY_0`` through ``INPUT_KEY_3``.
